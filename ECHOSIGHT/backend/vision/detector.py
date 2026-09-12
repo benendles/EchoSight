@@ -26,16 +26,12 @@ def detect(image_path):
 
         class_name = result.names[class_id]
 
-        # -----------------------------
-        # Bounding box center
-        # -----------------------------
+            # Bounding box center
 
         center_x = (x1 + x2) / 2
         center_y = (y1 + y2) / 2
 
-        # -----------------------------
         # Horizontal position
-        # -----------------------------
 
         if center_x < width / 3:
             direction = "left"
@@ -46,9 +42,7 @@ def detect(image_path):
         else:
             direction = "right"
 
-        # -----------------------------
         # Vertical position
-        # -----------------------------
 
         if center_y < height / 3:
             vertical_position = "above"
@@ -59,9 +53,7 @@ def detect(image_path):
         else:
             vertical_position = "below"
 
-        # -----------------------------
         # Detection
-        # -----------------------------
 
         detection = {
             "class": class_name,

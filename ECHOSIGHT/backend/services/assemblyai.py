@@ -11,9 +11,7 @@ import websockets
 from dotenv import load_dotenv
 
 
-# ============================================================
 # CONFIGURATION
-# ============================================================
 
 ENV_PATH = Path(__file__).resolve().parents[1] / ".env"
 load_dotenv(ENV_PATH)
@@ -30,9 +28,8 @@ SAMPLE_FORMAT = pyaudio.paInt16
 # 1200 frames = 50 ms at 24 kHz
 FRAMES_PER_BUFFER = 1200
 
-# ------------------------------------------------------------
+
 # Microphone protection
-# ------------------------------------------------------------
 
 # Keep microphone disabled for this long after EchoSight finishes
 # speaking. This prevents the microphone from hearing the speaker.
@@ -49,9 +46,7 @@ SSL_CONTEXT = ssl.create_default_context(
 )
 
 
-# ============================================================
 # ECHOSIGHT TOOL
-# ============================================================
 
 ECHOSIGHT_TOOL = {
     "type": "function",
@@ -78,9 +73,7 @@ ECHOSIGHT_TOOL = {
 }
 
 
-# ============================================================
 # VOICE AGENT SYSTEM PROMPT
-# ============================================================
 
 SYSTEM_PROMPT = """
 You are EchoSight, a voice assistant designed to help blind or
@@ -118,9 +111,7 @@ collision-avoidance system.
 """.strip()
 
 
-# ============================================================
 # AUDIO INPUT / OUTPUT
-# ============================================================
 
 class AudioIO:
     """
@@ -215,9 +206,7 @@ class AudioIO:
         )
 
 
-# ============================================================
 # SEND MICROPHONE AUDIO
-# ============================================================
 
 async def send_microphone(ws, audio_io, listening_event):
     """

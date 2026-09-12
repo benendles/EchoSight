@@ -1,23 +1,17 @@
 import numpy as np
-
-
-# --------------------------------------------------
 # Calibration
-# --------------------------------------------------
-#
+
 # These are REFERENCE measurements.
-#
+
 # Example:
 # relative depth  -> actual distance
-#
+
 # Replace these values with measurements from
 # your own camera/images.
-#
+
 # IMPORTANT:
 # Depth Anything V2's depth scale is not guaranteed
 # to be linear in meters, so we fit a calibration model.
-# --------------------------------------------------
-
 CALIBRATION_POINTS = [
     # (relative_depth, distance_in_meters)
     (2.93, 5.0),

@@ -27,9 +27,7 @@ def analyze_scene(detections, depth_map):
 
     scene = []
 
-    # --------------------------------
     # Scene depth distribution
-    # --------------------------------
 
     valid_depth = depth_map[
         depth_map == depth_map
@@ -39,35 +37,27 @@ def analyze_scene(detections, depth_map):
 
         box = detection["box"]
 
-        # --------------------------------
         # 1. Get relative depth
-        # --------------------------------
 
         relative_depth = get_object_depth(
             depth_map,
             box
         )
 
-        # --------------------------------
         # 2. Classify relative distance
-        # --------------------------------
 
         distance = classify_distance(
             relative_depth,
             valid_depth
         )
 
-        # --------------------------------
         # 3. Optional estimated meters
-        # --------------------------------
 
         distance_meters = calibrate_depth(
             relative_depth
         )
 
-        # --------------------------------
         # 4. Spatial reasoning
-        # --------------------------------
 
         spatial = build_spatial_description(
             object_class=detection["class"],
@@ -79,9 +69,7 @@ def analyze_scene(detections, depth_map):
             image_height=depth_map.shape[0]
         )
 
-        # --------------------------------
         # 5. Build final object state
-        # --------------------------------
 
         object_info = {
             "class": detection["class"],

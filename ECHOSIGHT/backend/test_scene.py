@@ -18,9 +18,7 @@ print("       ECHOSIGHT TEST")
 print("==============================\n")
 
 
-# --------------------------------
 # 1. OBJECT DETECTION
-# --------------------------------
 
 print("Running object detection...")
 
@@ -58,9 +56,7 @@ for detection in detections:
     print()
 
 
-# --------------------------------
 # 2. DEPTH ESTIMATION
-# --------------------------------
 
 print("Running depth estimation...\n")
 
@@ -86,9 +82,7 @@ print(
 print()
 
 
-# --------------------------------
 # 3. SPATIAL ENGINE
-# --------------------------------
 
 print("Running spatial engine...\n")
 
@@ -98,13 +92,8 @@ scene = analyze_scene(
 )
 
 
-# --------------------------------
-# 4. STRUCTURED SCENE
-# --------------------------------
 
-# --------------------------------
 # 4. STRUCTURED SCENE
-# --------------------------------
 
 print("==============================")
 print("       SCENE STATE")
@@ -178,9 +167,8 @@ for obj in scene:
     )
 
     print("------------------------------")
-    # --------------------------------
+
 # 5. NAVIGATION ENGINE
-# --------------------------------
 
 print("\n==============================")
 print("       NAVIGATION")

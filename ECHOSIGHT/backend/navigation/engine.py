@@ -1,8 +1,6 @@
-# ============================================
-# ECHOSIGHT NAVIGATION ENGINE
-# ============================================
-
 """
+ECHOSIGHT NAVIGATION ENGINE
+
 Navigation decision engine.
 
 Input:
@@ -23,9 +21,7 @@ safety-certified collision avoidance system.
 """
 
 
-# --------------------------------------------
 # CONFIGURATION
-# --------------------------------------------
 
 # Objects that should generally be treated as
 # important obstacles when they are in the path.
@@ -41,9 +37,7 @@ OBSTACLE_CLASSES = {
 }
 
 
-# --------------------------------------------
 # OBJECT PRIORITY
-# --------------------------------------------
 
 def get_object_priority(object_info):
     """
@@ -62,54 +56,36 @@ def get_object_priority(object_info):
     confidence = object_info["confidence"]
 
 
-    # ----------------------------------------
     # Base priority
-    # ----------------------------------------
 
     priority = path_score
 
 
-    # ----------------------------------------
     # Distance weighting
-    # ----------------------------------------
 
     if distance == "close":
-
         priority += 0.30
-
     elif distance == "medium":
-
         priority += 0.15
-
     elif distance == "far":
-
         priority += 0.00
 
 
-    # ----------------------------------------
     # Object type
-    # ----------------------------------------
 
     if object_class in OBSTACLE_CLASSES:
-
         priority += 0.10
 
 
-    # ----------------------------------------
     # Detection confidence
-    # ----------------------------------------
 
     if confidence >= 0.80:
-
         priority += 0.05
-
 
     return min(priority, 1.0)
 
 
-# --------------------------------------------
 # FIND MOST IMPORTANT OBSTACLE
-# --------------------------------------------
 
 def find_primary_obstacle(scene):
     """
@@ -175,9 +151,7 @@ def make_navigation_decision(scene):
         CONTINUE
     """
 
-    # ----------------------------------------
     # No objects
-    # ----------------------------------------
 
     if not scene:
 
@@ -188,16 +162,12 @@ def make_navigation_decision(scene):
         }
 
 
-    # ----------------------------------------
     # Find primary obstacle
-    # ----------------------------------------
 
     obstacle = find_primary_obstacle(scene)
 
 
-    # ----------------------------------------
     # No obstacle
-    # ----------------------------------------
 
     if obstacle is None:
 
@@ -208,9 +178,7 @@ def make_navigation_decision(scene):
         }
 
 
-    # ----------------------------------------
     # Extract information
-    # ----------------------------------------
 
     object_class = obstacle["class"]
 
@@ -227,9 +195,7 @@ def make_navigation_decision(scene):
     )
 
 
-    # ----------------------------------------
     # CLOSE OBSTACLE
-    # ----------------------------------------
 
     if distance == "close":
 
@@ -247,9 +213,7 @@ def make_navigation_decision(scene):
         }
 
 
-    # ----------------------------------------
     # HIGH PATH SCORE
-    # ----------------------------------------
 
     if path_score >= 0.80:
 
@@ -267,15 +231,11 @@ def make_navigation_decision(scene):
         }
 
 
-    # ----------------------------------------
     # MEDIUM DISTANCE
-    # ----------------------------------------
 
     if distance == "medium":
 
-        # ------------------------------------
         # Object on the left
-        # ------------------------------------
 
         if direction == "left":
 
@@ -294,9 +254,7 @@ def make_navigation_decision(scene):
             }
 
 
-        # ------------------------------------
         # Object on the right
-        # ------------------------------------
 
         if direction == "right":
 
@@ -315,9 +273,7 @@ def make_navigation_decision(scene):
             }
 
 
-        # ------------------------------------
         # Object directly ahead
-        # ------------------------------------
 
         if direction == "center":
 
@@ -335,9 +291,7 @@ def make_navigation_decision(scene):
             }
 
 
-    # ----------------------------------------
     # FALLBACK
-    # ----------------------------------------
 
     return {
         "action": "CONTINUE",
@@ -349,9 +303,7 @@ def make_navigation_decision(scene):
     }
 
 
-# --------------------------------------------
 # HUMAN-READABLE NAVIGATION
-# --------------------------------------------
 
 def describe_navigation(decision):
     """

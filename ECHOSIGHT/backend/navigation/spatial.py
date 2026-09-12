@@ -1,9 +1,7 @@
 import numpy as np
 
 
-# --------------------------------
 # HORIZONTAL POSITION
-# --------------------------------
 
 def estimate_direction(box, image_width):
     """
@@ -29,9 +27,7 @@ def estimate_direction(box, image_width):
         return "right"
 
 
-# --------------------------------
 # VERTICAL POSITION
-# --------------------------------
 
 def estimate_vertical_position(box, image_height):
     """
@@ -57,9 +53,7 @@ def estimate_vertical_position(box, image_height):
         return "below"
 
 
-# --------------------------------
 # OBJECT SIZE
-# --------------------------------
 
 def calculate_box_area(box):
     """
@@ -98,9 +92,7 @@ def calculate_box_area_ratio(
     return float(box_area / image_area)
 
 
-# --------------------------------
 # DEPTH
-# --------------------------------
 
 def get_object_depth(depth_map, box):
     """
@@ -141,9 +133,7 @@ def get_object_depth(depth_map, box):
     return float(np.median(object_depth))
 
 
-# --------------------------------
 # RELATIVE DISTANCE
-# --------------------------------
 
 def classify_distance(object_depth, scene_depth):
     """
@@ -182,9 +172,7 @@ def classify_distance(object_depth, scene_depth):
         return "medium"
 
 
-# --------------------------------
 # WALKING PATH SCORE
-# --------------------------------
 
 def calculate_path_score(
     direction,
@@ -202,9 +190,7 @@ def calculate_path_score(
 
     score = 0.0
 
-    # --------------------------------
     # Horizontal position
-    # --------------------------------
 
     if direction == "center":
         score += 0.50
@@ -212,9 +198,7 @@ def calculate_path_score(
     elif direction in {"left", "right"}:
         score += 0.10
 
-    # --------------------------------
     # Vertical position
-    # --------------------------------
 
     if vertical_position == "below":
         score += 0.25
@@ -222,9 +206,7 @@ def calculate_path_score(
     elif vertical_position == "center":
         score += 0.20
 
-    # --------------------------------
     # Distance
-    # --------------------------------
 
     if distance == "close":
         score += 0.20
@@ -232,9 +214,7 @@ def calculate_path_score(
     elif distance == "medium":
         score += 0.10
 
-    # --------------------------------
     # Object size
-    # --------------------------------
 
     if box_area_ratio >= 0.30:
         score += 0.15
@@ -248,9 +228,7 @@ def calculate_path_score(
     return min(score, 1.0)
 
 
-# --------------------------------
 # WALKING PATH
-# --------------------------------
 
 def is_in_walking_path(
     direction,
@@ -276,9 +254,7 @@ def is_in_walking_path(
     return path_score >= 0.60
 
 
-# --------------------------------
 # SPATIAL RELATIONSHIP
-# --------------------------------
 
 def determine_spatial_relationship(
     direction,
@@ -305,9 +281,7 @@ def determine_spatial_relationship(
     )
 
 
-# --------------------------------
 # BUILD SPATIAL REPRESENTATION
-# --------------------------------
 
 def build_spatial_description(
     object_class,
