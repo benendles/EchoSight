@@ -1,0 +1,30 @@
+# EchoSight backend Python dependencies
+# Core web framework
+fastapi
+uvicorn
+
+# Environment / config
+python-dotenv
+
+# Image handling
+Pillow
+
+# Form/file uploads for FastAPI
+python-multipart
+
+# Vision / ML (YOLO + Depth Anything V2)
+ultralytics
+torch
+transformers
+numpy
+
+# Realtime voice agent / audio
+websockets
+pyaudio
+certifi
+
+# Optional helpers
+typing-inspection
+
+# Note: Installing 'torch' on macOS may require platform-specific wheels
+# (e.g., for MPS/arm64). See https://pytorch.org for install instructions.

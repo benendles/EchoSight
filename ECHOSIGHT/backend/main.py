@@ -11,11 +11,67 @@ from fastapi import Body, FastAPI, File, UploadFile, WebSocket, WebSocketDisconn
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image, UnidentifiedImageError
 import uvicorn
+import ssl
+import certifi
 
-from navigation.engine import make_navigation_decision
-from vision.depth import estimate_depth
-from vision.detector import detect
-from vision.scene import analyze_scene, describe_scene
+# Try to import vision/navigation modules; provide clear stubs if missing
+_MISSING_VISION_DEPS = []
+
+try:
+    from navigation.engine import make_navigation_decision
+except Exception as _err:
+    try:
+        from backend.navigation.engine import make_navigation_decision
+    except Exception as _err2:
+        make_navigation_decision = None
+        _MISSING_VISION_DEPS.append(
+            f"navigation.engine import error: {_err}; {getattr(_err2, 'args', _err2)}"
+        )
+
+try:
+    from vision.depth import estimate_depth
+except Exception as _err:
+    try:
+        from backend.vision.depth import estimate_depth
+    except Exception as _err2:
+        estimate_depth = None
+        _MISSING_VISION_DEPS.append(
+            f"vision.depth import error: {_err}; {getattr(_err2, 'args', _err2)}"
+        )
+
+try:
+    from vision.detector import detect
+except Exception as _err:
+    try:
+        from backend.vision.detector import detect
+    except Exception as _err2:
+        detect = None
+        _MISSING_VISION_DEPS.append(
+            f"vision.detector import error: {_err}; {getattr(_err2, 'args', _err2)}"
+        )
+
+try:
+    from vision.scene import analyze_scene, describe_scene
+except Exception as _err:
+    try:
+        from backend.vision.scene import analyze_scene, describe_scene
+    except Exception as _err2:
+        analyze_scene = None
+        describe_scene = None
+        _MISSING_VISION_DEPS.append(
+            f"vision.scene import error: {_err}; {getattr(_err2, 'args', _err2)}"
+        )
+
+
+def _ensure_vision_available():
+    """Raise a helpful error when vision modules are not available."""
+    if _MISSING_VISION_DEPS:
+        details = "; ".join(_MISSING_VISION_DEPS)
+        raise RuntimeError(
+            "Vision dependencies are not installed or failed to import. "
+            "Install the needed packages (see backend/requirements.txt) or fix import errors. "
+            f"Details: {details}"
+        )
 from threading import Lock
 import time
 
@@ -374,16 +430,17 @@ async def voice_token():
             method="GET",
         )
 
+        # Use a certifi-backed SSL context to avoid macOS / custom-Python
+        # certificate verification issues when calling external HTTPS APIs.
+        ssl_ctx = ssl.create_default_context(cafile=certifi.where())
+
         with urllib.request.urlopen(
             request,
             timeout=15,
+            context=ssl_ctx,
         ) as response:
 
-            data = json.loads(
-                response
-                .read()
-                .decode("utf-8")
-            )
+            data = json.loads(response.read().decode("utf-8"))
 
         token = data.get("token")
 
