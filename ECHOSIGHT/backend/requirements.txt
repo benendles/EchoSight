@@ -18,10 +18,13 @@ torch
 transformers
 numpy
 
-# Realtime voice agent / audio
+# Realtime voice agent networking
 websockets
-pyaudio
 certifi
+
+# PyAudio is intentionally not installed on Railway. The deployed frontend
+# captures microphone audio in the browser and the backend only creates the
+# temporary AssemblyAI token.
 
 # Optional helpers
 typing-inspection
