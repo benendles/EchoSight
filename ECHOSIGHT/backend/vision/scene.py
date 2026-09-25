@@ -1,10 +1,17 @@
 from .metric_depth import calibrate_depth
 
-from navigation.spatial import (
-    get_object_depth,
-    classify_distance,
-    build_spatial_description
-)
+try:
+    from ..navigation.spatial import (
+        get_object_depth,
+        classify_distance,
+        build_spatial_description,
+    )
+except ImportError:
+    from navigation.spatial import (
+        get_object_depth,
+        classify_distance,
+        build_spatial_description,
+    )
 
 
 def analyze_scene(detections, depth_map):
