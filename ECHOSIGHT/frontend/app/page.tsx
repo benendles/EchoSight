@@ -546,17 +546,24 @@ export default function Home() {
             break;
 
           case "reply.audio": {
-            if (!message.data) {
+            const encodedAudio =
+              message.data || message.audio || message.audio_data;
+
+            if (!encodedAudio) {
+              console.warn("[EchoSight] Reply audio had no audio payload.");
               break;
             }
 
             const context = audioContextRef.current;
 
             if (!context) {
+              console.warn("[EchoSight] Reply audio arrived before AudioContext.");
               break;
             }
 
-            const pcm = new Int16Array(base64ToArrayBuffer(message.data));
+            void context.resume();
+
+            const pcm = new Int16Array(base64ToArrayBuffer(encodedAudio));
 
             const audioBuffer = context.createBuffer(1, pcm.length, 24000);
 
@@ -772,6 +779,14 @@ export default function Home() {
 
       assemblyWsRef.current = ws;
 
+      const context = new AudioContext({
+        sampleRate: 24000,
+      });
+
+      audioContextRef.current = context;
+
+      await context.resume();
+
       ws.binaryType = "arraybuffer";
 
       ws.onopen = () => {
@@ -891,11 +906,12 @@ export default function Home() {
 
         microphoneStreamRef.current = stream;
 
-        const context = new AudioContext({
-          sampleRate: 24000,
-        });
+        const context = audioContextRef.current;
 
-        audioContextRef.current = context;
+        if (!context) {
+          stream.getTracks().forEach((track) => track.stop());
+          throw new Error("Audio playback context is unavailable.");
+        }
 
         await context.resume();
 
