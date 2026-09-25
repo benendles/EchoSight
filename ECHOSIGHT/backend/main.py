@@ -1,6 +1,7 @@
 import base64
 import io
 import json
+import math
 import os
 import urllib.parse
 import urllib.request
@@ -93,6 +94,23 @@ LATEST_SCENE: dict = {
 }
 
 LATEST_SCENE_LOCK = Lock()
+
+
+def _json_safe(value):
+    """Convert model output into values supported by JSON responses."""
+    if isinstance(value, dict):
+        return {key: _json_safe(item) for key, item in value.items()}
+
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(item) for item in value]
+
+    if hasattr(value, "item"):
+        return _json_safe(value.item())
+
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
+
+    return value
 
 
 def update_latest_scene(scene, decision, description, answer=""):
@@ -706,13 +724,13 @@ async def upload_image(
         description = describe_scene(scene)
         update_latest_scene(scene, decision, description)
 
-        return {
+        return _json_safe({
             "type": "vision_result",
             "filename": file.filename,
             "scene": scene,
             "navigation": decision,
             "description": description,
-        }
+        })
 
     except ValueError as error:
 
@@ -723,15 +741,13 @@ async def upload_image(
 
     except Exception as error:
 
-        print(
-            "[Upload] Vision error:",
-            error,
-        )
+        print(f"[Upload] Vision error: {error!r}")
 
         return {
             "type": "error",
             "message": (
-                "Could not analyze the image."
+                "Could not analyze the image. "
+                "Check the Railway service logs for details."
             ),
         }
 
@@ -905,7 +921,7 @@ async def vision_websocket(
                     )
                 )
 
-                result = {
+                result = _json_safe({
                     "type": "vision_result",
                     "scene": scene,
                     "navigation": decision,
@@ -914,7 +930,7 @@ async def vision_websocket(
                             scene
                         )
                     ),
-                }
+                })
 
                 await websocket.send_json(
                     result

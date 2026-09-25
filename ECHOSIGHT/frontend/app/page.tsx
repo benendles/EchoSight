@@ -1047,6 +1047,14 @@ export default function Home() {
 
         console.log("[EchoSight] Upload vision result:", rawResult);
 
+        if (rawResult.type === "error") {
+          throw new Error(
+            typeof rawResult.message === "string"
+              ? rawResult.message
+              : "The backend could not analyze this image.",
+          );
+        }
+
         // The upload endpoint already performs:
         // image → YOLO → depth → spatial reasoning → navigation
         // Therefore we consume its result directly and DO NOT
