@@ -1,7 +1,9 @@
 from ultralytics import YOLO
+from pathlib import Path
 
 # Load YOLO11n
-model = YOLO("yolo11n.pt")
+MODEL_PATH = Path(__file__).resolve().parents[2] / "yolo11n.pt"
+model = YOLO(str(MODEL_PATH))
 
 
 def detect(image_path):

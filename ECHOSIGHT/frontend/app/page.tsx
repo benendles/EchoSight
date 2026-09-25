@@ -11,8 +11,10 @@ import {
   useState,
 } from "react";
 
-const BACKEND_URL = "http://localhost:8000";
-const VISION_WS_URL = "ws://localhost:8000/ws/vision";
+const BACKEND_URL = (
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"
+).replace(/\/$/, "");
+const VISION_WS_URL = `${BACKEND_URL.replace(/^http/, "ws")}/ws/vision`;
 const ASSEMBLYAI_WS_URL = "wss://agents.assemblyai.com/v1/ws";
 
 type VoiceState =
