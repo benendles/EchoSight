@@ -14,6 +14,8 @@ python-multipart
 
 # Vision / ML (YOLO + Depth Anything V2)
 ultralytics
+# Railway uses the headless build in the build command because the API does not
+# need OpenCV GUI libraries such as libxcb.
 torch
 transformers
 numpy
