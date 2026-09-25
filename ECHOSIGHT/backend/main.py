@@ -19,53 +19,70 @@ import certifi
 _MISSING_VISION_DEPS = []
 
 try:
-    from navigation.engine import make_navigation_decision
+    from backend.navigation.engine import make_navigation_decision
 except Exception as _err:
     try:
-        from backend.navigation.engine import make_navigation_decision
+        from navigation.engine import make_navigation_decision
     except Exception as _err2:
         make_navigation_decision = None
         _MISSING_VISION_DEPS.append(
-            f"navigation.engine import error: {_err}; {getattr(_err2, 'args', _err2)}"
+            f"navigation.engine import error: {_err!r}; {_err2!r}"
         )
 
 try:
-    from vision.depth import estimate_depth
+    from backend.vision.depth import estimate_depth
 except Exception as _err:
     try:
-        from backend.vision.depth import estimate_depth
+        from vision.depth import estimate_depth
     except Exception as _err2:
         estimate_depth = None
         _MISSING_VISION_DEPS.append(
-            f"vision.depth import error: {_err}; {getattr(_err2, 'args', _err2)}"
+            f"vision.depth import error: {_err!r}; {_err2!r}"
         )
 
 try:
-    from vision.detector import detect
+    from backend.vision.detector import detect
 except Exception as _err:
     try:
-        from backend.vision.detector import detect
+        from vision.detector import detect
     except Exception as _err2:
         detect = None
         _MISSING_VISION_DEPS.append(
-            f"vision.detector import error: {_err}; {getattr(_err2, 'args', _err2)}"
+            f"vision.detector import error: {_err!r}; {_err2!r}"
         )
 
 try:
-    from vision.scene import analyze_scene, describe_scene
+    from backend.vision.scene import analyze_scene, describe_scene
 except Exception as _err:
     try:
-        from backend.vision.scene import analyze_scene, describe_scene
+        from vision.scene import analyze_scene, describe_scene
     except Exception as _err2:
         analyze_scene = None
         describe_scene = None
         _MISSING_VISION_DEPS.append(
-            f"vision.scene import error: {_err}; {getattr(_err2, 'args', _err2)}"
+            f"vision.scene import error: {_err!r}; {_err2!r}"
         )
 
 
 def _ensure_vision_available():
     """Raise a helpful error when vision modules are not available."""
+    missing_callables = [
+        name
+        for name, function in (
+            ("make_navigation_decision", make_navigation_decision),
+            ("estimate_depth", estimate_depth),
+            ("detect", detect),
+            ("analyze_scene", analyze_scene),
+            ("describe_scene", describe_scene),
+        )
+        if not callable(function)
+    ]
+
+    if missing_callables:
+        _MISSING_VISION_DEPS.append(
+            "Missing callables: " + ", ".join(missing_callables)
+        )
+
     if _MISSING_VISION_DEPS:
         details = "; ".join(_MISSING_VISION_DEPS)
         raise RuntimeError(
@@ -225,6 +242,8 @@ def analyze_image(image_path: Path):
        ↓
     Navigation decision
     """
+
+    _ensure_vision_available()
 
     print(
         f"\n[ECHOSIGHT] Analyzing: {image_path.name}"
