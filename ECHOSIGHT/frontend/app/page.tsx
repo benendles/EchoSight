@@ -168,6 +168,10 @@ export default function Home() {
 
   const playbackTimeRef = useRef(0);
 
+  const playbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const audioSourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
+
   const messageIdRef = useRef(0);
 
   const mountedRef = useRef(true);
@@ -539,6 +543,12 @@ export default function Home() {
             break;
 
           case "reply.started":
+            if (playbackTimerRef.current) {
+              clearTimeout(playbackTimerRef.current);
+              playbackTimerRef.current = null;
+            }
+
+            voiceStateRef.current = "speaking";
             setVoiceState("speaking");
 
             setLastMessage("EchoSight is speaking...");
@@ -557,7 +567,9 @@ export default function Home() {
             const context = audioContextRef.current;
 
             if (!context) {
-              console.warn("[EchoSight] Reply audio arrived before AudioContext.");
+              console.warn(
+                "[EchoSight] Reply audio arrived before AudioContext.",
+              );
               break;
             }
 
@@ -579,6 +591,8 @@ export default function Home() {
 
             source.connect(context.destination);
 
+            audioSourcesRef.current.add(source);
+
             const now = context.currentTime;
 
             const startAt = Math.max(now + 0.005, playbackTimeRef.current);
@@ -588,12 +602,7 @@ export default function Home() {
             playbackTimeRef.current = startAt + audioBuffer.duration;
 
             source.onended = () => {
-              if (
-                mountedRef.current &&
-                playbackTimeRef.current <= context.currentTime + 0.03
-              ) {
-                setVoiceState("listening");
-              }
+              audioSourcesRef.current.delete(source);
             };
 
             break;
@@ -626,6 +635,8 @@ export default function Home() {
 
             setVoiceState("thinking");
 
+            voiceStateRef.current = "thinking";
+
             const command =
               typeof args.command === "string"
                 ? args.command
@@ -653,9 +664,25 @@ export default function Home() {
             if (status === "interrupted") {
               pendingToolResultsRef.current = [];
 
+              if (playbackTimerRef.current) {
+                clearTimeout(playbackTimerRef.current);
+                playbackTimerRef.current = null;
+              }
+
+              for (const source of audioSourcesRef.current) {
+                try {
+                  source.stop();
+                } catch {
+                  // A source may already have finished.
+                }
+              }
+
+              audioSourcesRef.current.clear();
+
               playbackTimeRef.current =
                 audioContextRef.current?.currentTime || 0;
 
+              voiceStateRef.current = "listening";
               setVoiceState("listening");
 
               break;
@@ -680,9 +707,37 @@ export default function Home() {
                   }),
                 );
               }
+
+              voiceStateRef.current = "thinking";
+              setVoiceState("thinking");
+
+              break;
             }
 
-            if (voiceState !== "speaking") {
+            const context = audioContextRef.current;
+            const remainingPlaybackMs = context
+              ? Math.max(
+                  0,
+                  (playbackTimeRef.current - context.currentTime) * 1000,
+                )
+              : 0;
+
+            if (remainingPlaybackMs > 30) {
+              voiceStateRef.current = "speaking";
+              setVoiceState("speaking");
+              playbackTimerRef.current = setTimeout(() => {
+                playbackTimerRef.current = null;
+
+                if (
+                  mountedRef.current &&
+                  voiceStateRef.current === "speaking"
+                ) {
+                  voiceStateRef.current = "listening";
+                  setVoiceState("listening");
+                }
+              }, remainingPlaybackMs + 30);
+            } else if (voiceStateRef.current !== "thinking") {
+              voiceStateRef.current = "listening";
               setVoiceState("listening");
             }
 
@@ -705,7 +760,7 @@ export default function Home() {
         console.error("[EchoSight] AssemblyAI message error:", error);
       }
     },
-    [addMessage, analyzeCurrentFrame, voiceState],
+    [addMessage, analyzeCurrentFrame],
   );
 
   /* STOP VOICE */
