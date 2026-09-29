@@ -159,13 +159,6 @@ export default function Home() {
 
   const processingFrameRef = useRef(false);
 
-  const pendingToolResultsRef = useRef<
-    Array<{
-      call_id: string;
-      result: string;
-    }>
-  >([]);
-
   const playbackTimeRef = useRef(0);
 
   const playbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -520,6 +513,7 @@ export default function Home() {
 
         switch (message.type) {
           case "session.ready":
+            voiceStateRef.current = "listening";
             setVoiceState("listening");
 
             setVoiceConnected(true);
@@ -642,28 +636,32 @@ export default function Home() {
                 ? args.command
                 : "Describe the current scene.";
 
-            analyzeCurrentFrame(command).then((result) => {
-              pendingToolResultsRef.current.push({
-                call_id: callId,
+            void analyzeCurrentFrame(command).then((result) => {
+              const ws = assemblyWsRef.current;
 
-                result: JSON.stringify(result),
-              });
+              if (!ws || ws.readyState !== WebSocket.OPEN) {
+                voiceStateRef.current = "error";
+                setVoiceState("error");
+                setLastMessage("Voice connection was lost during scene analysis.");
+                return;
+              }
+
+              ws.send(
+                JSON.stringify({
+                  type: "tool.result",
+                  call_id: callId,
+                  result: JSON.stringify(result),
+                }),
+              );
             });
 
             break;
           }
 
-          /*
-           * Send queued tool results
-           * after reply.done.
-           */
-
           case "reply.done": {
             const status = message.status;
 
             if (status === "interrupted") {
-              pendingToolResultsRef.current = [];
-
               if (playbackTimerRef.current) {
                 clearTimeout(playbackTimerRef.current);
                 playbackTimerRef.current = null;
@@ -684,32 +682,6 @@ export default function Home() {
 
               voiceStateRef.current = "listening";
               setVoiceState("listening");
-
-              break;
-            }
-
-            const ws = assemblyWsRef.current;
-
-            if (
-              ws?.readyState === WebSocket.OPEN &&
-              pendingToolResultsRef.current.length
-            ) {
-              const pending = pendingToolResultsRef.current.splice(0);
-
-              for (const item of pending) {
-                ws.send(
-                  JSON.stringify({
-                    type: "tool.result",
-
-                    call_id: item.call_id,
-
-                    result: item.result,
-                  }),
-                );
-              }
-
-              voiceStateRef.current = "thinking";
-              setVoiceState("thinking");
 
               break;
             }
@@ -791,8 +763,6 @@ export default function Home() {
 
       assemblyWsRef.current = null;
     }
-
-    pendingToolResultsRef.current = [];
 
     setVoiceConnected(false);
 
